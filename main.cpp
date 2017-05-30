@@ -53,8 +53,8 @@ public:
 
     virtual void Start()
     {
-		//URHO3D_LOGRAW(node->GetName() + "\n");
-		OpenConsoleWindow();
+		//printf("%f %f %f %f\n", CEIL_POSITION, FLOOR_POSITION, node->GetPosition2D().y_, node->GetPosition2D().x_);
+		//OpenConsoleWindow();
 
 		CreateScene();
 
@@ -135,7 +135,8 @@ public:
 		// Create rigid body
 		RigidBody2D* ballBody = ball->CreateComponent<RigidBody2D>();
 		ballBody->SetBodyType(BT_DYNAMIC);
-		ballBody->SetLinearVelocity(Vector2(0.5f, 1.0f));
+		//ballBody->SetLinearVelocity(Vector2(0.5f, 1.0f));
+		ballBody->ApplyLinearImpulse(Vector2(3.0f, 3.0f), Vector2(-2.0f, 3.0f), true);
 		ballBody->SetGravityScale(0.0f);
 
 		StaticSprite2D* staticSprite = ball->CreateComponent<StaticSprite2D>();
@@ -148,11 +149,11 @@ public:
 			// Set radius
 			circle->SetRadius(0.16f);
 			// Set density
-			circle->SetDensity(1.0f);
+			circle->SetDensity(0.0f);
 			// Set friction.
 			circle->SetFriction(0.0f);
 			// Set restitution
-			circle->SetRestitution(0.0f);
+			circle->SetRestitution(1.0f);
 		/***********************************FIN COLISION DE LA PELOTA***********************/
 
 		/***************************END PELOTAAA*****************************/

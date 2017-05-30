@@ -86,7 +86,6 @@ void Character::FixedUpdate(float timeStep)
 	if (moveDir.LengthSquared() > 0.0f)
 		moveDir.Normalize();
 
-	printf("%f %f %f %f\n", CEIL_POSITION, FLOOR_POSITION, node->GetPosition2D().y_, node->GetPosition2D().x_);
 	if ((node->GetPosition().y_ < CEIL_POSITION && moveDir.y_ > 0)
 		|| (node->GetPosition().y_ > FLOOR_POSITION && moveDir.y_ < 0))
 	{
