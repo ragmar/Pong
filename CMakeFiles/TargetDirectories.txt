@@ -1,0 +1,4 @@
+D:/Documents/Documentos/GitHub/Pong/CMakeFiles/Pong.dir
+D:/Documents/Documentos/GitHub/Pong/CMakeFiles/INSTALL.dir
+D:/Documents/Documentos/GitHub/Pong/CMakeFiles/ALL_BUILD.dir
+D:/Documents/Documentos/GitHub/Pong/CMakeFiles/ZERO_CHECK.dir
