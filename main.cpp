@@ -25,6 +25,10 @@
 #include <Urho3D/Physics/PhysicsEvents.h>
 #include <Urho3D/Physics/PhysicsWorld.h>
 
+#include <Urho3D/UI/UI.h>
+#include <Urho3D/UI/Font.h>
+#include <Urho3D/UI/Text.h>
+
 #include "Character.h"
 
 using namespace Urho3D;
@@ -35,6 +39,8 @@ public:
 
 	SharedPtr<Node> cameraNode_;
 	SharedPtr<Scene> scene_;
+	SharedPtr<Node> enemy_;
+	SharedPtr<Node> ball_;
 	WeakPtr<Character> character_;
 
     MyApp(Context* context) :
@@ -57,6 +63,30 @@ public:
 		//OpenConsoleWindow();
 
 		CreateScene();
+		/*
+		ResourceCache* cache = GetSubsystem<ResourceCache>();
+		UI* ui = GetSubsystem<UI>();
+		
+		// Construct new Text object, set string to display and font to use
+		Text* instructionText = ui->GetRoot()->CreateChild<Text>("AIScore");
+		instructionText->SetText("0");
+		instructionText->SetFont(cache->GetResource<Font>("Fonts/Anonymous Pro.ttf"), 45);
+
+		// Position the text relative to the screen center
+		instructionText->SetHorizontalAlignment(HA_LEFT);
+		instructionText->SetVerticalAlignment(VA_CENTER);
+		instructionText->SetPosition(ui->GetRoot()->GetWidth() / 32, 0);
+
+		// Construct new Text object, set string to display and font to use
+		instructionText = ui->GetRoot()->CreateChild<Text>("PlayerScore");
+		instructionText->SetText("0");
+		instructionText->SetFont(cache->GetResource<Font>("Fonts/Anonymous Pro.ttf"), 45);
+
+		// Position the text relative to the screen center
+		instructionText->SetHorizontalAlignment(HA_RIGHT);
+		instructionText->SetVerticalAlignment(VA_CENTER);
+		instructionText->SetPosition(- ui->GetRoot()->GetWidth() / 32, 0);*/
+		
 
 		SetupViewport();
 
@@ -68,19 +98,8 @@ public:
 		scene_ = new Scene(context_);
 		scene_->CreateComponent<Octree>();
 		scene_->CreateComponent<DebugRenderer>();
-		// Create camera node
-		cameraNode_ = scene_->CreateChild("Camera");
-		// Set camera's position
-		//cameraNode_->SetPosition(Vector3(0.0f, 0.0f, -10.0f));
-		cameraNode_->SetPosition(Vector3(0.0f, 0.0f, -10.0f));
 
-		Camera* camera = cameraNode_->CreateComponent<Camera>();
-		camera->SetOrthographic(true);
-
-		Graphics* graphics = GetSubsystem<Graphics>();
-		camera->SetOrthoSize((float)graphics->GetHeight() * PIXEL_SIZE);
-		camera->SetZoom(1.2f * Min((float)graphics->GetWidth() / 1280.0f, (float)graphics->GetHeight() / 800.0f)); // Set zoom according to user's resolution to ensure full visibility (initial zoom (1.2) is set for full visibility at 1280x800 resolution)
-
+		CreateCamera();
 
 		ResourceCache* cache = GetSubsystem<ResourceCache>();
 		Sprite2D* boxSprite = cache->GetResource<Sprite2D>("Urho2D/Box.png");
@@ -128,37 +147,26 @@ public:
 
 		CreateCharacter(boxSprite);
 
-		/***************CREAMOS PELOTA**************/
-		Node* ball = scene_->CreateChild("Ball");
-		ball->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
+		CreateEnemy(boxSprite);
 
-		// Create rigid body
-		RigidBody2D* ballBody = ball->CreateComponent<RigidBody2D>();
-		ballBody->SetBodyType(BT_DYNAMIC);
-		//ballBody->SetLinearVelocity(Vector2(0.5f, 1.0f));
-		ballBody->ApplyLinearImpulse(Vector2(3.0f, 3.0f), Vector2(-2.0f, 3.0f), true);
-		ballBody->SetGravityScale(0.0f);
-
-		StaticSprite2D* staticSprite = ball->CreateComponent<StaticSprite2D>();
-
-		staticSprite->SetSprite(ballSprite);
-
-		/***********************************COLISION DE LA PELOTA***********************/
-			// Create circle
-			CollisionCircle2D* circle = ball->CreateComponent<CollisionCircle2D>();
-			// Set radius
-			circle->SetRadius(0.16f);
-			// Set density
-			circle->SetDensity(0.0f);
-			// Set friction.
-			circle->SetFriction(0.0f);
-			// Set restitution
-			circle->SetRestitution(1.0f);
-		/***********************************FIN COLISION DE LA PELOTA***********************/
-
-		/***************************END PELOTAAA*****************************/
+		CreateBall(ballSprite);
 	}
 
+	virtual void CreateCamera() 
+	{
+		// Create camera node
+		cameraNode_ = scene_->CreateChild("Camera");
+		// Set camera's position
+		//cameraNode_->SetPosition(Vector3(0.0f, 0.0f, -10.0f));
+		cameraNode_->SetPosition(Vector3(0.0f, 0.0f, -10.0f));
+
+		Camera* camera = cameraNode_->CreateComponent<Camera>();
+		camera->SetOrthographic(true);
+
+		Graphics* graphics = GetSubsystem<Graphics>();
+		camera->SetOrthoSize((float)graphics->GetHeight() * PIXEL_SIZE);
+		camera->SetZoom(1.2f * Min((float)graphics->GetWidth() / 1280.0f, (float)graphics->GetHeight() / 800.0f)); // Set zoom according to user's resolution to ensure full visibility (initial zoom (1.2) is set for full visibility at 1280x800 resolution)
+	}
 	virtual void CreateCharacter(Sprite2D* boxSprite)
 	{
 		Node* playerNode = scene_->CreateChild("Player");
@@ -179,6 +187,59 @@ public:
 		// Remember it so that we can set the controls. Use a WeakPtr because the scene hierarchy already owns it
 		// and keeps it alive as long as it's not removed from the hierarchy
 		character_ = playerNode->CreateComponent<Character>();
+	}
+
+	virtual void CreateEnemy(Sprite2D* boxSprite)
+	{
+		Node* enemyNode = scene_->CreateChild("Enemy");
+		enemyNode->SetPosition(Vector3(- 5.0f, 0.0f, 0.0f));
+		enemyNode->SetScale(Vector3(1.0f, 4.0f, 0.0f));
+		enemyNode->SetRotation2D(180.0f);
+
+		// Create 2D rigid body for gound
+		RigidBody2D* enemyBody = enemyNode->CreateComponent<RigidBody2D>();
+		enemyBody->SetBodyType(BT_KINEMATIC);
+
+		StaticSprite2D* enemySprite = enemyNode->CreateComponent<StaticSprite2D>();
+		enemySprite->SetSprite(boxSprite);
+
+		CollisionBox2D* enemyShape = enemyNode->CreateComponent<CollisionBox2D>();
+		enemyShape->SetSize(Vector2(0.32f, 0.32f));
+
+		// Create the character logic component, which takes care of steering the rigidbody
+		// Remember it so that we can set the controls. Use a WeakPtr because the scene hierarchy already owns it
+		// and keeps it alive as long as it's not removed from the hierarchy
+		enemy_ = enemyNode;
+	}
+
+	virtual void CreateBall(Sprite2D* ballSprite) 
+	{
+		ball_ = scene_->CreateChild("Ball");
+		ball_->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
+
+		// Create rigid body
+		RigidBody2D* ballBody = ball_->CreateComponent<RigidBody2D>();
+		ballBody->SetBodyType(BT_DYNAMIC);
+		//ballBody->SetLinearVelocity(Vector2(0.5f, 1.0f));
+		ballBody->ApplyLinearImpulse(Vector2(-5.0f, 3.0f), Vector2(-2.0f, 3.0f), true);
+		ballBody->SetGravityScale(0.0f);
+
+
+		StaticSprite2D* staticSprite = ball_->CreateComponent<StaticSprite2D>();
+
+		staticSprite->SetSprite(ballSprite);
+
+		// Create circle
+		CollisionCircle2D* circle = ball_->CreateComponent<CollisionCircle2D>();
+		// Set radius
+		circle->SetRadius(0.16f);
+		// Set density
+		circle->SetDensity(0.0f);
+		// Set friction.
+		circle->SetFriction(0.0f);
+		// Set restitution
+		circle->SetRestitution(1.0f);
+
 	}
 
 	virtual void SetupViewport() 
@@ -211,26 +272,30 @@ public:
 			character_->controls_.Set(CTRL_UP, input->GetKeyDown(KEY_W));
 			character_->controls_.Set(CTRL_DOWN, input->GetKeyDown(KEY_S));
 		}
+
+		if (enemy_ && ball_) 
+		{
+			Vector2 enemyPosition	= enemy_->GetPosition2D();
+			Vector2 ballPosition	= ball_->GetPosition2D();
+
+			if (enemyPosition.y_ < ballPosition.y_) 
+			{
+				enemy_->Translate2D(Vector2::DOWN*0.0125f);
+			}
+			else 
+			{
+				enemy_->Translate2D(Vector2::UP*0.0125f);
+			}
+		}
 	}
 
     void HandleKeyDown(StringHash eventType, VariantMap& eventData)
     {
-
         using namespace KeyDown;
         // Check for pressing ESC. Note the engine_ member variable for convenience access to the Engine object
         int key = eventData[P_KEY].GetInt();
         if (key == KEY_ESCAPE)
 			engine_->Exit();
-
-		if (key == KEY_W) 
-		{
-			//character_->Translate2D(Vector2::UP * 0.05f);
-		}
-
-		if (key == KEY_S) 
-		{
-			//character_->Translate2D(Vector2::DOWN * 0.05f);
-		}
     }
 
 	virtual void SubscribeToEvents() 
