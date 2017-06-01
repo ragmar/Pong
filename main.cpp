@@ -203,7 +203,7 @@ public:
 		StaticSprite2D* playerSprite = playerNode->CreateComponent<StaticSprite2D>();
 		playerSprite->SetSprite(boxSprite);
 
-		CollisionBox2D* playerShape = playerNode->CreateComponent<CollisionBox2D>();
+		CollisionShape2D* playerShape = playerNode->CreateComponent<CollisionShape2D>();
 		playerShape->SetSize(Vector2(0.32f, 0.32f));
 
 		// Create the character logic component, which takes care of steering the rigidbody
@@ -244,7 +244,7 @@ public:
 		RigidBody2D* ballBody = ball_->CreateComponent<RigidBody2D>();
 		ballBody->SetBodyType(BT_DYNAMIC);
 		//ballBody->SetLinearVelocity(Vector2(0.5f, 1.0f));
-		ballBody->ApplyLinearImpulse(Vector2(-5.0f, 3.0f), Vector2(-2.0f, 3.0f), true);
+		ballBody->ApplyLinearImpulse(Vector2(-5.0f, Random(-3.0f, 3.0f)), Vector2(0.0f, 0.0f), true);
 		ballBody->SetGravityScale(0.0f);
 
 
@@ -290,7 +290,7 @@ public:
 		RigidBody2D* ballBody = ball_->CreateComponent<RigidBody2D>();
 		ballBody->SetBodyType(BT_DYNAMIC);
 		//ballBody->SetLinearVelocity(Vector2(0.5f, 1.0f));
-		ballBody->ApplyLinearImpulse(Vector2(-5.0f, 3.0f), Vector2(-2.0f, 3.0f), true);
+		ballBody->ApplyLinearImpulse(Vector2(-5.0f, Random(-3.0f, 3.0f)), Vector2(0.0f, 0.0f), true);
 		ballBody->SetGravityScale(0.0f);
 
 		ResourceCache* cache = GetSubsystem<ResourceCache>();
@@ -367,7 +367,7 @@ public:
 				{
 					enemy_->Translate2D(Vector2::DOWN*0.0125f);
 				}
-				else
+				else if(enemyPosition.y_ > ballPosition.y_)
 				{
 					enemy_->Translate2D(Vector2::UP*0.0125f);
 				}
