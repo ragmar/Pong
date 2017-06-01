@@ -203,7 +203,7 @@ public:
 		StaticSprite2D* playerSprite = playerNode->CreateComponent<StaticSprite2D>();
 		playerSprite->SetSprite(boxSprite);
 
-		CollisionShape2D* playerShape = playerNode->CreateComponent<CollisionShape2D>();
+		CollisionBox2D* playerShape = playerNode->CreateComponent<CollisionBox2D>();
 		playerShape->SetSize(Vector2(0.32f, 0.32f));
 
 		// Create the character logic component, which takes care of steering the rigidbody
