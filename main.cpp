@@ -43,6 +43,12 @@ public:
 	SharedPtr<Node> ball_;
 	WeakPtr<Character> character_;
 
+	Text* textPlayerScore_;
+	Text* textEnemiScore_;
+	Text* centralText_;
+	int playerScore_;
+	int enemyScore_;
+
     MyApp(Context* context) :
         Application(context)
     {
@@ -63,30 +69,8 @@ public:
 		//OpenConsoleWindow();
 
 		CreateScene();
-		/*
-		ResourceCache* cache = GetSubsystem<ResourceCache>();
-		UI* ui = GetSubsystem<UI>();
 		
-		// Construct new Text object, set string to display and font to use
-		Text* instructionText = ui->GetRoot()->CreateChild<Text>("AIScore");
-		instructionText->SetText("0");
-		instructionText->SetFont(cache->GetResource<Font>("Fonts/Anonymous Pro.ttf"), 45);
-
-		// Position the text relative to the screen center
-		instructionText->SetHorizontalAlignment(HA_LEFT);
-		instructionText->SetVerticalAlignment(VA_CENTER);
-		instructionText->SetPosition(ui->GetRoot()->GetWidth() / 32, 0);
-
-		// Construct new Text object, set string to display and font to use
-		instructionText = ui->GetRoot()->CreateChild<Text>("PlayerScore");
-		instructionText->SetText("0");
-		instructionText->SetFont(cache->GetResource<Font>("Fonts/Anonymous Pro.ttf"), 45);
-
-		// Position the text relative to the screen center
-		instructionText->SetHorizontalAlignment(HA_RIGHT);
-		instructionText->SetVerticalAlignment(VA_CENTER);
-		instructionText->SetPosition(- ui->GetRoot()->GetWidth() / 32, 0);*/
-		
+		CreateScore();
 
 		SetupViewport();
 
@@ -152,6 +136,44 @@ public:
 		CreateBall(ballSprite);
 	}
 
+	virtual void CreateScore() 
+	{
+		ResourceCache* cache = GetSubsystem<ResourceCache>();
+		UI* ui = GetSubsystem<UI>();
+
+		// Construct new Text object, set string to display and font to use
+		textEnemiScore_= ui->GetRoot()->CreateChild<Text>("EnemiScore");
+		textEnemiScore_->SetText("0");
+		textEnemiScore_->SetFont(cache->GetResource<Font>("Fonts/Anonymous Pro.ttf"), 45);
+
+		// Position the text relative to the screen center
+		textEnemiScore_->SetHorizontalAlignment(HA_LEFT);
+		textEnemiScore_->SetVerticalAlignment(VA_CENTER);
+		textEnemiScore_->SetPosition(ui->GetRoot()->GetWidth() / 32, 0);
+
+		// Construct new Text object, set string to display and font to use
+		textPlayerScore_ = ui->GetRoot()->CreateChild<Text>("PlayerScore");
+		textPlayerScore_->SetText("0");
+		textPlayerScore_->SetFont(cache->GetResource<Font>("Fonts/Anonymous Pro.ttf"), 45);
+
+		// Position the text relative to the screen center
+		textPlayerScore_->SetHorizontalAlignment(HA_RIGHT);
+		textPlayerScore_->SetVerticalAlignment(VA_CENTER);
+		textPlayerScore_->SetPosition(-ui->GetRoot()->GetWidth() / 32, 0);
+
+		centralText_ = ui->GetRoot()->CreateChild<Text>("CentralText");
+		centralText_->SetText("0");
+		centralText_->SetFont(cache->GetResource<Font>("Fonts/Anonymous Pro.ttf"), 45);
+
+		centralText_->SetHorizontalAlignment(HA_CENTER);
+		centralText_->SetVerticalAlignment(VA_CENTER);
+		centralText_->SetPosition(0, 0);
+		centralText_->SetVisible(false);
+
+		playerScore_ = 0;
+		enemyScore_ = 0;
+	}
+
 	virtual void CreateCamera() 
 	{
 		// Create camera node
@@ -167,6 +189,7 @@ public:
 		camera->SetOrthoSize((float)graphics->GetHeight() * PIXEL_SIZE);
 		camera->SetZoom(1.2f * Min((float)graphics->GetWidth() / 1280.0f, (float)graphics->GetHeight() / 800.0f)); // Set zoom according to user's resolution to ensure full visibility (initial zoom (1.2) is set for full visibility at 1280x800 resolution)
 	}
+
 	virtual void CreateCharacter(Sprite2D* boxSprite)
 	{
 		Node* playerNode = scene_->CreateChild("Player");
@@ -215,7 +238,7 @@ public:
 	virtual void CreateBall(Sprite2D* ballSprite) 
 	{
 		ball_ = scene_->CreateChild("Ball");
-		ball_->SetPosition(Vector3(0.0f, 0.0f, 0.0f));
+		ball_->SetPosition2D(Vector2(0.0f, 0.0f));
 
 		// Create rigid body
 		RigidBody2D* ballBody = ball_->CreateComponent<RigidBody2D>();
@@ -226,7 +249,6 @@ public:
 
 
 		StaticSprite2D* staticSprite = ball_->CreateComponent<StaticSprite2D>();
-
 		staticSprite->SetSprite(ballSprite);
 
 		// Create circle
@@ -240,6 +262,53 @@ public:
 		// Set restitution
 		circle->SetRestitution(1.0f);
 
+	}
+
+	virtual void WriteCentralText(String textToWrite) 
+	{
+		// Construct new Text object, set string to display and font to use
+		centralText_->SetText(textToWrite);
+		centralText_->SetVisible(true);
+	}
+
+	virtual void SetPlayerScore(int score)
+	{
+		textPlayerScore_->SetText(String(score));
+	}
+
+	virtual void SetEnemiScore(int score) 
+	{
+		textEnemiScore_->SetText(String(score));
+	}
+
+	virtual void ResetBall() 
+	{
+		ball_->SetPosition2D(0, 0);
+		ball_->RemoveAllComponents();
+
+		// Create rigid body
+		RigidBody2D* ballBody = ball_->CreateComponent<RigidBody2D>();
+		ballBody->SetBodyType(BT_DYNAMIC);
+		//ballBody->SetLinearVelocity(Vector2(0.5f, 1.0f));
+		ballBody->ApplyLinearImpulse(Vector2(-5.0f, 3.0f), Vector2(-2.0f, 3.0f), true);
+		ballBody->SetGravityScale(0.0f);
+
+		ResourceCache* cache = GetSubsystem<ResourceCache>();
+		Sprite2D* ballSprite = cache->GetResource<Sprite2D>("Urho2D/Ball.png");
+
+		StaticSprite2D* staticSprite = ball_->CreateComponent<StaticSprite2D>();
+		staticSprite->SetSprite(ballSprite);
+
+		// Create circle
+		CollisionCircle2D* circle = ball_->CreateComponent<CollisionCircle2D>();
+		// Set radius
+		circle->SetRadius(0.16f);
+		// Set density
+		circle->SetDensity(0.0f);
+		// Set friction.
+		circle->SetFriction(0.0f);
+		// Set restitution
+		circle->SetRestitution(1.0f);
 	}
 
 	virtual void SetupViewport() 
@@ -267,24 +336,57 @@ public:
 		
 		Input* input = GetSubsystem<Input>();
 
+		if (playerScore_ == 5) 
+		{
+			
+			WriteCentralText("You Win");
+			ball_->RemoveAllComponents();
+		}
+
+		if (enemyScore_ == 5) 
+		{
+			WriteCentralText("You Lose");
+			ball_->RemoveAllComponents();
+		}
+
 		if (character_) 
 		{
 			character_->controls_.Set(CTRL_UP, input->GetKeyDown(KEY_W));
 			character_->controls_.Set(CTRL_DOWN, input->GetKeyDown(KEY_S));
 		}
 
-		if (enemy_ && ball_) 
+		if (ball_) 
 		{
-			Vector2 enemyPosition	= enemy_->GetPosition2D();
-			Vector2 ballPosition	= ball_->GetPosition2D();
+			Vector2 ballPosition = ball_->GetPosition2D();
 
-			if (enemyPosition.y_ < ballPosition.y_) 
+			if (enemy_)
 			{
-				enemy_->Translate2D(Vector2::DOWN*0.0125f);
+				Vector2 enemyPosition = enemy_->GetPosition2D();
+
+				if (enemyPosition.y_ < ballPosition.y_)
+				{
+					enemy_->Translate2D(Vector2::DOWN*0.0125f);
+				}
+				else
+				{
+					enemy_->Translate2D(Vector2::UP*0.0125f);
+				}
 			}
-			else 
+
+			if (ballPosition.x_ < -6) 
 			{
-				enemy_->Translate2D(Vector2::UP*0.0125f);
+				playerScore_++;
+				SetPlayerScore(playerScore_);
+				ResetBall();
+				//printf("PLAYER SCORED %i %f\n", playerScore_, ball_->GetPosition2D().x_);
+			}
+
+			if (ballPosition.x_ > 6)
+			{
+				enemyScore_++;
+				SetEnemiScore(enemyScore_);
+				ResetBall();
+				//printf("ENEMI SCORED %i %f\n", playerScore_, ball_->GetPosition2D().x_);
 			}
 		}
 	}
