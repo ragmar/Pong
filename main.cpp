@@ -31,6 +31,7 @@ using namespace Urho3D;
 class MyApp : public Application
 {
 public:
+	const int SCORE_TO_WIN = 5;
 
 	SharedPtr<Node> cameraNode_;
 	SharedPtr<Scene> scene_;
@@ -176,7 +177,7 @@ public:
 		playerNode->SetPosition(Vector3(5.0f, 0.0f, 0.0f));
 		playerNode->SetScale(Vector3(1.0f, 4.0f, 0.0f));
 
-		// Create 2D rigid body for gound
+		// Create 2D rigid body
 		RigidBody2D* playerBody = playerNode->CreateComponent<RigidBody2D>();
 		playerBody->SetBodyType(BT_KINEMATIC);
 
@@ -202,7 +203,7 @@ public:
 		enemyNode->SetScale(Vector3(1.0f, 4.0f, 0.0f));
 		enemyNode->SetRotation2D(180.0f);
 
-		// Create 2D rigid body for gound
+		// Create 2D rigid body
 		RigidBody2D* enemyBody = enemyNode->CreateComponent<RigidBody2D>();
 		enemyBody->SetBodyType(BT_KINEMATIC);
 
@@ -220,7 +221,7 @@ public:
 
 	virtual void WriteCentralText(String textToWrite) 
 	{
-		// Construct new Text object, set string to display and font to use
+		// Set the text to write on the screen and make it visible
 		centralText_->SetText(textToWrite);
 		centralText_->SetVisible(true);
 	}
@@ -244,14 +245,9 @@ public:
 		renderer->SetViewport(0, viewport);
 	}
 
-	virtual void Stop()
-    {
-        // Perform optional cleanup after main loop has terminated
-    }
-
 	void HandleCollision(StringHash eventType, VariantMap& eventData)
 	{
-
+		//Using ball physics to move it.
 	}
 
 	void HandleUpdate(StringHash eventType, VariantMap& eventData)
@@ -260,14 +256,13 @@ public:
 		
 		Input* input = GetSubsystem<Input>();
 
-		if (playerScore_ == 5) 
+		if (playerScore_ == SCORE_TO_WIN)
 		{
-			
 			WriteCentralText("You Win");
 			ball_.RemoveAllComponents();
 		}
 
-		if (enemyScore_ == 5) 
+		if (enemyScore_ == SCORE_TO_WIN)
 		{
 			WriteCentralText("You Lose");
 			ball_.RemoveAllComponents();
@@ -286,6 +281,7 @@ public:
 			enemy_->SetBallPosition(ballPosition);
 		}
 
+		//If ball is behind the AI, score 1 point to the player
 		if (ballPosition.x_ < -6) 
 		{
 			playerScore_++;
@@ -293,6 +289,7 @@ public:
 			ball_.ResetBall();
 		}
 
+		//If ball is behind the player, score 1 point to the enemy
 		if (ballPosition.x_ > 6)
 		{
 			enemyScore_++;
