@@ -292,7 +292,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </CustomBuild>
   </ItemGroup>
   <ItemGroup>
+    <ClCompile Include="Ball.cpp" />
     <ClCompile Include="D:\Documents\Documentos\GitHub\Pong\main.cpp" />
+    <ClCompile Include="Enemy.cpp" />
     <ClCompile Include="main2.cpp" />
     <ClCompile Include="main3.cpp" />
     <ClCompile Include="Character.cpp" />
@@ -306,7 +308,9 @@ if %errorlevel% neq 0 goto :VCEnd</Command>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Ball.h" />
     <ClInclude Include="Character.h" />
+    <ClInclude Include="Enemy.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

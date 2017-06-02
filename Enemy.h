@@ -5,21 +5,16 @@
 
 using namespace Urho3D;
 
-const int CTRL_UP = 1;
-const int CTRL_DOWN = 2;
-
-const float MOVE_SPEED = 0.04f;
-const float CEIL_POSITION = 2.485f;
-const float FLOOR_POSITION = -2.485f;
+const float ENEMY_SPEED = 0.0125f;
 
 /// Character component, responsible for physical movement according to controls, as well as animation.
-class Character : public LogicComponent
+class Enemy : public LogicComponent
 {
-	URHO3D_OBJECT(Character, LogicComponent);
+	URHO3D_OBJECT(Enemy, LogicComponent);
 
 public:
 	/// Construct.
-	Character(Context* context);
+	Enemy(Context* context);
 
 	/// Register object factory and attributes.
 	static void RegisterObject(Context* context);
@@ -30,9 +25,11 @@ public:
 	/// Handle physics world update. Called by LogicComponent base class.
 	virtual void FixedUpdate(float timeStep);
 
-	/// Movement controls. Assigned by the main program each frame.
-	Controls controls_;
+	//Set ball Position to move the enemy
+	virtual void SetBallPosition(Vector2 ballPosition);
 
 private:
+
+	Vector2 ballPosition;
 	Node* node;
 };
